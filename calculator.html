@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Calculator</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      const selectedCart = [
+          { price: 20 },
+          { price: 45 },
+          { price: 67 },
+          { price: 1305 }
+        ];
+
+      const currencyNames = {
+        "USD": "US dollars",
+        "RUB": "rubles",
+        "EUR": "euros",
+        "GBP": "pounds",
+        "JPY": "yens"
+      }
+
+      const urlCurrencies = `https://openexchangerates.org/api/latest.json?app_id=${"357b80b6234441d69b3f38233eb5e60c"}
+        &symbols=USD%2CRUB%2CEUR%2CGBP%2CJPY`;
+
+      const getRates = url => fetch(
+        url,
+        { method: "GET" }
+        ).then(response => {
+          return response.json()
+        }).then(result => {
+          return result.rates
+        }).catch(error => {
+          console.log(error.toString())
+          return {};
+        });
+
+      const calculateAllPrice = selectedCart => selectedCart.reduce((all, curr) => all + curr.price, 0);
+
+      const constructResultObj = (rates, PriceInUSD) => Object.keys(rates).reduce((all, current) => {
+        return {
+          ...all,
+          [currencyNames[current]]: PriceInUSD * rates[current]
+        }
+      }, {});
+
+      const addObjToHtml = (root, resultObj) => {
+        root.textContent = JSON.stringify(resultObj);
+      }
+
+      window.onload = async function () {
+        const priceInUSD = calculateAllPrice(selectedCart);
+        const rates = await getRates(urlCurrencies);
+        const resultObj = constructResultObj(rates, priceInUSD);
+
+        addObjToHtml(root, resultObj);
+      }
+    </script>
+  </body>
+</html>
